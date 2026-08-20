@@ -1,29 +1,52 @@
 name: update-companies-data
+
 on:
   schedule:
-    # Runs "at 18:45 (Nepal Time), every Monday to Friday
+    # Runs at 18:45 (Nepal Time), every Monday to Friday
     - cron: "0 13,14,15,16,17 * * 0,1,2,3,4,5"
   workflow_dispatch:
+
 defaults:
   run:
     working-directory: ./src
+
 jobs:
   update-daily-data:
     name: update-daily-data
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.8" # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          python-version: "3.8"
+          
       - name: Install packages
         run: pip install -r requirements.txt
-      - name: Run updater
+
+      # --- NEW: Discover newly listed companies ---
+      - name: Discover new companies
+        run: python discoverCompanies.py
+
+      # --- NEW: Backfill historical data for any newly discovered companies ---
+      - name: Backfill data for new companies
+        run: python allDataScrapper.py
+
+      # --- Existing: Update daily data for all known companies ---
+      - name: Run daily updater
         run: python dailyDataScrapper.py
+
       - name: Setup Git
-        run: git config --local user.email "aabishkar2@gmail.com" && git config --local user.name "Aabishkar Wagle Bot"
+        run: |
+          git config --local user.email "aabishkar2@gmail.com"
+          git config --local user.name "Aabishkar Wagle Bot"
+
       - name: Commit Files
-        run: git stage ../data && git commit -m "Update data"
+        # Changed 'git stage' to standard 'git add'. 
+        # Added '|| echo "No changes"' to prevent workflow failure on market holidays.
+        run: |
+          git add ../data
+          git commit -m "Update data and sync new companies" || echo "No changes to commit"
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
