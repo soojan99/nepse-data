@@ -14,43 +14,40 @@ jobs:
   update-daily-data:
     name: update-daily-data
     runs-on: ubuntu-latest
+    
+    # Explicitly grant the workflow permission to write to the repository
+    permissions:
+      contents: write
+
     steps:
-      # UPDATED to v4 to resolve Node.js 20 deprecation warning
       - uses: actions/checkout@v4
       
-      # UPDATED to v5 to resolve Node.js 20 deprecation warning
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10" # Updated to 3.10 as 3.8 is officially EOL, but your scripts will still work perfectly
+          python-version: "3.10"
       
       - name: Install packages
         run: pip install -r requirements.txt
 
-      # Discover newly listed companies (fixes the missing SGHL issue)
       - name: Discover new companies
         run: python discoverCompanies.py
 
-      # Backfill historical data for any newly discovered companies
       - name: Backfill data for new companies
         run: python allDataScrapper.py
 
-      # Update daily data for all known companies
       - name: Run daily updater
         run: python dailyDataScrapper.py
 
-      - name: Setup Git
+      - name: Commit and Push Changes
         run: |
           git config --local user.email "aabishkar2@gmail.com"
           git config --local user.name "Aabishkar Wagle Bot"
-
-      - name: Commit Files
-        # Added '|| echo "No changes"' to prevent workflow failure on market holidays/weekends
-        run: |
+          
+          # Stage changes in the data directory
           git add ../data
+          
+          # Commit if there are changes, otherwise gracefully skip
           git commit -m "Update data and sync new companies" || echo "No changes to commit"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          
+          # Push using the built-in authentication set up by actions/checkout
+          git push
