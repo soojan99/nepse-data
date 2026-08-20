@@ -15,23 +15,26 @@ jobs:
     name: update-daily-data
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      # UPDATED to v4 to resolve Node.js 20 deprecation warning
+      - uses: actions/checkout@v4
+      
+      # UPDATED to v5 to resolve Node.js 20 deprecation warning
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
-          
+          python-version: "3.10" # Updated to 3.10 as 3.8 is officially EOL, but your scripts will still work perfectly
+      
       - name: Install packages
         run: pip install -r requirements.txt
 
-      # --- NEW: Discover newly listed companies ---
+      # Discover newly listed companies (fixes the missing SGHL issue)
       - name: Discover new companies
         run: python discoverCompanies.py
 
-      # --- NEW: Backfill historical data for any newly discovered companies ---
+      # Backfill historical data for any newly discovered companies
       - name: Backfill data for new companies
         run: python allDataScrapper.py
 
-      # --- Existing: Update daily data for all known companies ---
+      # Update daily data for all known companies
       - name: Run daily updater
         run: python dailyDataScrapper.py
 
@@ -41,8 +44,7 @@ jobs:
           git config --local user.name "Aabishkar Wagle Bot"
 
       - name: Commit Files
-        # Changed 'git stage' to standard 'git add'. 
-        # Added '|| echo "No changes"' to prevent workflow failure on market holidays.
+        # Added '|| echo "No changes"' to prevent workflow failure on market holidays/weekends
         run: |
           git add ../data
           git commit -m "Update data and sync new companies" || echo "No changes to commit"
