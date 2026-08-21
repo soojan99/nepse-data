@@ -29,8 +29,11 @@ def update_nepse_index():
 
     # 1. Read existing data to find the last recorded date
     df_existing = pd.read_csv(CSV_FILE_PATH)
-    last_date_str = str(df_existing["published_date"].iloc[-1])
-    last_date = datetime.strptime(last_date_str, "%Y-%m-%d")
+    
+    # Robustly parse the last date, handling various formats like '8/20/2026' or '2026-08-20'
+    last_date_raw = df_existing["published_date"].iloc[-1]
+    last_date = pd.to_datetime(last_date_raw)
+    last_date_str = last_date.strftime("%Y-%m-%d")
     
     # 2. Define the date range to fetch (from the day after the last record to today)
     start_date = (last_date + timedelta(days=1)).strftime("%Y-%m-%d")
