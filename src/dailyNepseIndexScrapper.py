@@ -17,7 +17,7 @@ except ImportError:
         return 0
 
 # Configuration
-CSV_FILE_PATH = "data/nepse.csv"  # Adjust if your GitHub Actions working directory differs
+CSV_FILE_PATH = Path("../data/nepse.csv")  # Adjust if your GitHub Actions working directory differs
 SHARE_SANSAR_URL = "https://www.sharesansar.com/index-history-data"
 INDEX_ID = "12"  # NEPSE Index ID
 
