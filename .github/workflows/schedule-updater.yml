@@ -38,6 +38,9 @@ jobs:
       - name: Run daily updater
         run: python dailyDataScrapper.py
 
+      - name: Run Nepse Index updater
+        run: python scripts/update_nepse_index.py      
+
       - name: Commit and Push Changes
         run: |
           git config --local user.email "aabishkar2@gmail.com"
