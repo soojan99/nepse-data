@@ -39,7 +39,7 @@ jobs:
         run: python dailyDataScrapper.py
 
       - name: Run Nepse Index updater
-        run: python scripts/update_nepse_index.py      
+        run: python dailyNepseIndexScrapper.py      
 
       - name: Commit and Push Changes
         run: |
