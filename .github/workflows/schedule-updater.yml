@@ -29,6 +29,21 @@ jobs:
       - name: Install packages
         run: pip install -r requirements.txt
 
+      - name: Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Fetch the latest changes from the remote
+          git fetch origin
+          
+          # Rebase your local changes on top of the remote changes
+          # Replace 'main' with your branch name
+          git rebase origin/main 
+          
+          # Push the rebased changes
+          git push origin main
+    
       - name: Discover new companies
         run: python discoverCompanies.py
 
